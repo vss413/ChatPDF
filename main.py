@@ -1,3 +1,4 @@
+import os
 from langchain.document_loaders import PyPDFLoader
 from langchain.vectorstores import Chroma
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -15,15 +16,39 @@ embeddings = OpenAIEmbeddings()
 
 #docsearch = Chroma.from_documents(pages, embeddings, persist_directory="./chroma_Matthew").as_retriever()
 
+#saveEmbeddings = createChromafromEmbeddings("docs/Matthew.pdf",embeddings)
+
 # load from disk
-docsearch = Chroma(persist_directory="./chroma_Matthew", embedding_function=embeddings).as_retriever()
+#docsearch = Chroma(persist_directory="./chroma_Matthew", embedding_function=embeddings).as_retriever()
 # docs = db3.similarity_search(query)
 # print(docs[0].page_content)
 
+def createChromafromEmbeddings(filePath, embedding):
+    loader = UnstructuredPDFLoader(filePath)
+    pages = loader.load_and_split()
+    fileName = get_filename_without_extension(filePath)
+    chromaPath = "chroma_"+fileName
+    docsearch = Chroma.from_documents(pages, embedding, persist_directory=chromaPath).as_retriever()
+    
+    return docsearch
+
+def get_filename_without_extension(path):
+    filename_with_extension = os.path.basename(path)
+    filename_without_extension = os.path.splitext(filename_with_extension)[0]
+    return filename_without_extension
+
+def returnChromafromEmbeddings(chromaPath, embedding):
+    docsearch = Chroma(persist_directory=chromaPath, embedding_function=embedding).as_retriever()
+    
+    return docsearch
 
 print("\n\n")
 
-print(docsearch)
+#chromapath = returnChromafromEmbeddings("./chroma_Ruth", embeddings)
+
+chromapath = createChromafromEmbeddings("docs/Ruth.pdf", embeddings)
+
+print(chromapath)
 
 print("\n\n")
 
@@ -36,7 +61,7 @@ while True:
         print("Thank you!")
         break    
     query += "Please respond only from the current context"
-    docs = docsearch.get_relevant_documents(query)
+    docs = chromapath.get_relevant_documents(query)
     # chain = load_qa_chain(OpenAI(temperature=0), chain_type="stuff")
     chain = load_qa_chain(ChatOpenAI(temperature=0), chain_type="stuff")
     output = chain.run(input_documents=docs, question=query)
