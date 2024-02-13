@@ -6,6 +6,15 @@ from langchain.document_loaders import UnstructuredPDFLoader
 # from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.chains.question_answering import load_qa_chain
+# using flask_restful
+from flask import Flask, jsonify, request
+from flask_restful import Resource, Api
+
+# creating the flask app
+app = Flask(__name__)
+# creating an API object
+api = Api(app)
+
 
 # Replace book.pdf with any pdf of your choice
 
@@ -48,7 +57,7 @@ print("\n\n")
 
 #chromapath = returnChromafromEmbeddings("./chroma_Genesis", embeddings)
 
-fileName = "Ruth"
+fileName = "Genesis"
 
 if os.path.exists("dbs/chroma_"+fileName):
     print("Chroma exists so returning from Embeddings")
@@ -62,19 +71,31 @@ print(chromapath)
 
 print("\n\n")
 
-while True: 
-# Choose any query of your choice
-    print("\n\n")
-    query = input("Ask a question: ")
-    
-    if query.lower() == 'quit':
-        print("Thank you!")
-        break    
+def chatPDFCall(query):
     query += "Please respond only from the current context and do not mention current context in your response"
     docs = chromapath.get_relevant_documents(query)
     # chain = load_qa_chain(OpenAI(temperature=0), chain_type="stuff")
     chain = load_qa_chain(ChatOpenAI(temperature=0), chain_type="stuff")
     output = chain.run(input_documents=docs, question=query)
+    return output
+
+print("You can ask me any questions on the book of "+fileName+". Some sample questions to get you started  \n")
+print(chatPDFCall("Please provide some sample prompts"))
+while True: 
+# Choose any query of your choice
+    print("\n")
+    #print("====== I am ready to answer any questions you have on the book of "+fileName+"======")
+    query = input("Ask a question: ")
+    
+    if query.lower() == 'quit':
+        print("Thank you!")
+        break    
+    output = chatPDFCall(query)
+    # query += "Please respond only from the current context and do not mention current context in your response"
+    # docs = chromapath.get_relevant_documents(query)
+    # # chain = load_qa_chain(OpenAI(temperature=0), chain_type="stuff")
+    # chain = load_qa_chain(ChatOpenAI(temperature=0), chain_type="stuff")
+    # output = chain.run(input_documents=docs, question=query)
     print(output)
 
 #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
