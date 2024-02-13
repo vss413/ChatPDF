@@ -27,7 +27,7 @@ def createChromafromEmbeddings(filePath, embedding):
     loader = UnstructuredPDFLoader(filePath)
     pages = loader.load_and_split()
     fileName = get_filename_without_extension(filePath)
-    chromaPath = "chroma_"+fileName
+    chromaPath = "dbs/chroma_"+fileName
     docsearch = Chroma.from_documents(pages, embedding, persist_directory=chromaPath).as_retriever()
     
     return docsearch
@@ -44,9 +44,19 @@ def returnChromafromEmbeddings(chromaPath, embedding):
 
 print("\n\n")
 
-#chromapath = returnChromafromEmbeddings("./chroma_Ruth", embeddings)
+#chromapath = createChromafromEmbeddings("docs/Genesis.pdf", embeddings)
 
-chromapath = createChromafromEmbeddings("docs/Ruth.pdf", embeddings)
+#chromapath = returnChromafromEmbeddings("./chroma_Genesis", embeddings)
+
+fileName = "Ruth"
+
+if os.path.exists("dbs/chroma_"+fileName):
+    print("Chroma exists so returning from Embeddings")
+    chromapath = returnChromafromEmbeddings("dbs/chroma_"+fileName, embeddings)
+else:
+    print("Chroma does not exist so creating from Embeddings")
+    chromapath = createChromafromEmbeddings("docs/"+ fileName +".pdf", embeddings)
+      
 
 print(chromapath)
 
@@ -60,7 +70,7 @@ while True:
     if query.lower() == 'quit':
         print("Thank you!")
         break    
-    query += "Please respond only from the current context"
+    query += "Please respond only from the current context and do not mention current context in your response"
     docs = chromapath.get_relevant_documents(query)
     # chain = load_qa_chain(OpenAI(temperature=0), chain_type="stuff")
     chain = load_qa_chain(ChatOpenAI(temperature=0), chain_type="stuff")
@@ -68,3 +78,4 @@ while True:
     print(output)
 
 #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
+#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

@@ -12,7 +12,7 @@ class PDFQuery:
     def __init__(self, openai_api_key = None) -> None:
         self.embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
         os.environ["OPENAI_API_KEY"] = openai_api_key
-        self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
+        self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=100000, chunk_overlap=2000)
         # self.llm = OpenAI(temperature=0, openai_api_key=openai_api_key)
         self.llm = ChatOpenAI(temperature=0, openai_api_key=openai_api_key)
         self.chain = None
